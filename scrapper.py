@@ -62,9 +62,9 @@ def get_county_list(province_url):
     province_dict = {}
     url_base = 'http://vdb3.soil.csdb.cn'
 
-    browser = webdriver.Chrome('chromedriver.exe', chrome_options=chrome_options)
+    browser = webdriver.Chrome('./chromedriver', chrome_options=chrome_options)
     browser.get(province_url)
-    time.sleep(5)
+    time.sleep(3.5)
     bs_province = BeautifulSoup(browser.page_source, 'html.parser')
 
     info = bs_province.find(class_='datatypetable')
@@ -95,7 +95,7 @@ def get_county_list(province_url):
 
         nextpage_key = browser.find_element_by_xpath("//a[contains(text(),'下一页')]")
         nextpage_key.send_keys('\n')
-        time.sleep(5)
+        time.sleep(3.5)
         bs_province = BeautifulSoup(browser.page_source, 'html.parser')
 
         info = bs_province.find(class_='datatypetable')
@@ -110,9 +110,9 @@ def get_soil_list(county_url):
     soil_list = []
     url_base = 'http://vdb3.soil.csdb.cn'
 
-    browser = webdriver.Chrome('chromedriver.exe', chrome_options=chrome_options)
+    browser = webdriver.Chrome('./chromedriver', chrome_options=chrome_options)
     browser.get(county_url)
-    time.sleep(5)
+    time.sleep(3.5)
     bs_county = BeautifulSoup(browser.page_source, 'html.parser')
 
     info = bs_county.find(class_='datatypetable')
@@ -137,7 +137,7 @@ def get_soil_list(county_url):
 
         nextpage_key = browser.find_element_by_xpath("//a[contains(text(),'下一页')]")
         nextpage_key.send_keys('\n')
-        time.sleep(5)
+        time.sleep(3.5)
         bs_county = BeautifulSoup(browser.page_source, 'html.parser')
 
         info = bs_county.find(class_='datatypetable')
@@ -145,13 +145,13 @@ def get_soil_list(county_url):
     return soil_list
 
 
-@timeout(300)
+@timeout(250)
 def get_soil_details(soil_url):
     soil_dict = {}
     url_base = 'http://vdb3.soil.csdb.cn'
-    browser = webdriver.Chrome('chromedriver.exe', chrome_options=chrome_options)
+    browser = webdriver.Chrome('./chromedriver', chrome_options=chrome_options)
     browser.get(soil_url)
-    time.sleep(5)
+    time.sleep(3.5)
 
     bs_soil = BeautifulSoup(browser.page_source, 'html.parser')
     soil_rows = bs_soil.find(class_='datatypetable').find_all('div', class_='row')[1:]
@@ -172,7 +172,7 @@ def get_soil_details(soil_url):
             prof_landspace_list.append(get_prof_landspace_detail(prof_landspace_url))
         nextpage_key = browser.find_element_by_xpath("//a[@id='整合数据库integ_soil_proflandspacenext']")
         nextpage_key.send_keys('\n')
-        time.sleep(5)
+        time.sleep(3.5)
         bs_soil = BeautifulSoup(browser.page_source, 'html.parser')
         soil_rows = bs_soil.find(class_='datatypetable').find_all('div', class_='row')[1:]
         prof_landspace_rows = soil_rows[-5].find('table').find_all('tr')[1:]
@@ -195,7 +195,7 @@ def get_soil_details(soil_url):
 
             nextpage_key = browser.find_element_by_xpath("//a[@id='{:s}']".format(ind_dict[ind]))
             nextpage_key.send_keys('\n')
-            time.sleep(5)
+            time.sleep(3.5)
             bs_soil = BeautifulSoup(browser.page_source, 'html.parser')
             soil_rows = bs_soil.find(class_='datatypetable').find_all('div', class_='row')[1:]
             prof_rows = soil_rows[ind].find(class_='datacol').find_all('tr')[1:]
@@ -250,7 +250,7 @@ def get_prof_detail(prof_url_set):
 if __name__ == '__main__':
     total_dict = {}
     province_list = get_province_list()
-    province_list = province_list[24:]
+    province_list = province_list[14:]
     for province_url in province_list:
         province_dict = get_county_list(province_url)
         with open('data_raw/{:s}.json'.format(province_dict['省份名称']), 'w', encoding='utf-8') as fp:

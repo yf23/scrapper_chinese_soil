@@ -16,11 +16,30 @@ def parse_province(root_dict, output_dir):
         shutil.rmtree(output_dir)
     os.mkdir(output_dir)
 
+    # Create total workbook
+    col_names = ["省", "县/市", "土种名称", "土类名称", "亚类名称",
+                 "俗名", "分布和地形地貌",
+                 "面积（公顷）", "面积（万亩）", "母质",
+                 "剖面构型", "有效土体深度", "主要性状",
+                 "生产性能", "土壤障碍因子", "土地利用"]
+
+    workbook_total = xlsxwriter.Workbook(output_dir + province_name + '.xlsx')
+    worksheet_total = workbook_total.add_worksheet('土种类型')
+    format_total = workbook_total.add_format()
+    format_total.set_text_wrap()
+    format_total.set_align('center')
+    format_total.set_align('vcenter')
+
+    for i in range(len(col_names)):
+        worksheet_total.write(0, i, col_names[i], format_total)
+
+    # Parse County
+    total_row_count = 1
     for county_name, county_dict in root_dict['县市列表'].items():
-        parse_county(county_dict, province_name, county_name, output_dir)
+        total_row_count = parse_county(county_dict, province_name, county_name, output_dir, workbook_total, format_total, total_row_count)
 
 
-def parse_county(county_dict, province_name, county_name, output_dir):
+def parse_county(county_dict, province_name, county_name, output_dir, worksheet_total, format_total, total_row_count):
     output_dir = output_dir + '{:s}/'.format(county_name)
 
     if os.path.exists(output_dir):
@@ -28,10 +47,27 @@ def parse_county(county_dict, province_name, county_name, output_dir):
     os.mkdir(output_dir)
 
     for soil_dict in county_dict['土壤列表']:
-        parse_soil(soil_dict, province_name, county_name, output_dir)
+        parse_soil(soil_dict, province_name, county_name, output_dir, worksheet_total, format_total, total_row_count)
+        total_row_count += 1
+
+    return total_row_count
 
 
-def parse_soil(soil_dict, province_name, county_name, output_dir):
+def parse_soil(soil_dict, province_name, county_name, output_dir, worksheet_total, format_total, total_row_count):
+    row_names = ["土种名称", "土类名称", "亚类名称",
+                 "俗名", "描述", "分布和地形地貌",
+                 "面积（公顷）", "面积（万亩）", "母质",
+                 "剖面构型", "有效土体深度", "主要性状",
+                 "生产性能", "土壤障碍因子", "土地利用"]
+
+    # Total worksheet
+    worksheet_total.write(total_row_count, 0, province_name, format_total)
+    worksheet_total.write(total_row_count, 1, county_name, format_total)
+    col_count = 3
+    for row_name in row_names:
+        worksheet_total.write(total_row_count, col_count, reformat_value(soil_dict[row_name]), format_total)
+    
+    # Seperate worksheet
     soil_name = soil_dict['土种名称']
     spreadsheet_name = output_dir + "{:s}_{:s}_{:s}.xlsx".format(province_name, county_name, soil_name)
     print("正在创建{:s}".format(spreadsheet_name))
@@ -45,11 +81,6 @@ def parse_soil(soil_dict, province_name, county_name, output_dir):
     worksheet = workbook.add_worksheet('土种类型')
     worksheet.set_column(0, 0, 20)
     worksheet.set_column(1, 1, 100)
-    row_names = ["土种名称", "土类名称", "亚类名称",
-                 "俗名", "描述", "分布和地形地貌",
-                 "面积（公顷）", "面积（万亩）", "母质",
-                 "剖面构型", "有效土体深度", "主要性状",
-                 "生产性能", "土壤障碍因子", "土地利用"]
 
     row_count = 0
     for row_name in row_names:

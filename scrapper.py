@@ -10,6 +10,7 @@ import functools
 chrome_options = Options()
 chrome_options.add_argument("--disable-extensions")
 chrome_options.add_argument("--headless")
+chrome_options.add_argument("--disable-gpu")
 chrome_options.add_experimental_option("useAutomationExtension", False)
 
 
@@ -64,7 +65,7 @@ def get_county_list(province_url):
 
     browser = webdriver.Chrome('chromedriver.exe', chrome_options=chrome_options)
     browser.get(province_url)
-    time.sleep(5)
+    time.sleep(3.5)
     bs_province = BeautifulSoup(browser.page_source, 'html.parser')
 
     info = bs_province.find(class_='datatypetable')
@@ -95,7 +96,7 @@ def get_county_list(province_url):
 
         nextpage_key = browser.find_element_by_xpath("//a[contains(text(),'下一页')]")
         nextpage_key.send_keys('\n')
-        time.sleep(5)
+        time.sleep(3.5)
         bs_province = BeautifulSoup(browser.page_source, 'html.parser')
 
         info = bs_province.find(class_='datatypetable')
@@ -112,7 +113,7 @@ def get_soil_list(county_url):
 
     browser = webdriver.Chrome('chromedriver.exe', chrome_options=chrome_options)
     browser.get(county_url)
-    time.sleep(5)
+    time.sleep(3.5)
     bs_county = BeautifulSoup(browser.page_source, 'html.parser')
 
     info = bs_county.find(class_='datatypetable')
@@ -137,7 +138,7 @@ def get_soil_list(county_url):
 
         nextpage_key = browser.find_element_by_xpath("//a[contains(text(),'下一页')]")
         nextpage_key.send_keys('\n')
-        time.sleep(5)
+        time.sleep(3.5)
         bs_county = BeautifulSoup(browser.page_source, 'html.parser')
 
         info = bs_county.find(class_='datatypetable')
@@ -145,13 +146,13 @@ def get_soil_list(county_url):
     return soil_list
 
 
-@timeout(300)
+@timeout(240)
 def get_soil_details(soil_url):
     soil_dict = {}
     url_base = 'http://vdb3.soil.csdb.cn'
     browser = webdriver.Chrome('chromedriver.exe', chrome_options=chrome_options)
     browser.get(soil_url)
-    time.sleep(5)
+    time.sleep(3.5)
 
     bs_soil = BeautifulSoup(browser.page_source, 'html.parser')
     soil_rows = bs_soil.find(class_='datatypetable').find_all('div', class_='row')[1:]
@@ -172,7 +173,7 @@ def get_soil_details(soil_url):
             prof_landspace_list.append(get_prof_landspace_detail(prof_landspace_url))
         nextpage_key = browser.find_element_by_xpath("//a[@id='整合数据库integ_soil_proflandspacenext']")
         nextpage_key.send_keys('\n')
-        time.sleep(5)
+        time.sleep(3.5)
         bs_soil = BeautifulSoup(browser.page_source, 'html.parser')
         soil_rows = bs_soil.find(class_='datatypetable').find_all('div', class_='row')[1:]
         prof_landspace_rows = soil_rows[-5].find('table').find_all('tr')[1:]
@@ -195,7 +196,7 @@ def get_soil_details(soil_url):
 
             nextpage_key = browser.find_element_by_xpath("//a[@id='{:s}']".format(ind_dict[ind]))
             nextpage_key.send_keys('\n')
-            time.sleep(5)
+            time.sleep(4.5)
             bs_soil = BeautifulSoup(browser.page_source, 'html.parser')
             soil_rows = bs_soil.find(class_='datatypetable').find_all('div', class_='row')[1:]
             prof_rows = soil_rows[ind].find(class_='datacol').find_all('tr')[1:]

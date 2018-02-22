@@ -33,6 +33,7 @@ def parse_county(county_dict, province_name, county_name, output_dir):
 
 def parse_soil(soil_dict, province_name, county_name, output_dir):
     soil_name = soil_dict['土种名称']
+    soil_name = soil_name[:soil_name.find('\n')]
     spreadsheet_name = output_dir + "{:s}_{:s}_{:s}.xlsx".format(province_name, county_name, soil_name)
     print("正在创建{:s}".format(spreadsheet_name))
     workbook = xlsxwriter.Workbook(spreadsheet_name)
@@ -71,6 +72,8 @@ def parse_soil(soil_dict, province_name, county_name, output_dir):
     print("\t处理剖面数据...")
     worksheet_prof = workbook.add_worksheet("典型剖面数据")
     parse_prof(soil_dict["典型剖面数据"], soil_name, worksheet_prof, format)
+
+    workbook.close()
 
 
 def parse_prof(prof_dict, soil_name, worksheet_prof, format):

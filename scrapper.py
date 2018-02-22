@@ -63,7 +63,7 @@ def get_county_list(province_url):
     province_dict = {}
     url_base = 'http://vdb3.soil.csdb.cn'
 
-    browser = webdriver.Chrome('chromedriver.exe', chrome_options=chrome_options)
+    browser = webdriver.Chrome('./chromedriver.exe', chrome_options=chrome_options)
     browser.get(province_url)
     time.sleep(3.5)
     bs_province = BeautifulSoup(browser.page_source, 'html.parser')
@@ -111,7 +111,7 @@ def get_soil_list(county_url):
     soil_list = []
     url_base = 'http://vdb3.soil.csdb.cn'
 
-    browser = webdriver.Chrome('chromedriver.exe', chrome_options=chrome_options)
+    browser = webdriver.Chrome('./chromedriver.exe', chrome_options=chrome_options)
     browser.get(county_url)
     time.sleep(3.5)
     bs_county = BeautifulSoup(browser.page_source, 'html.parser')
@@ -146,11 +146,12 @@ def get_soil_list(county_url):
     return soil_list
 
 
+
 @timeout(240)
 def get_soil_details(soil_url):
     soil_dict = {}
     url_base = 'http://vdb3.soil.csdb.cn'
-    browser = webdriver.Chrome('chromedriver.exe', chrome_options=chrome_options)
+    browser = webdriver.Chrome('./chromedriver.exe', chrome_options=chrome_options)
     browser.get(soil_url)
     time.sleep(3.5)
 
@@ -181,27 +182,30 @@ def get_soil_details(soil_url):
 
     # 剖面发生层, 物理性质, 化学性质, 养分
     ind_dict = {-1: '整合数据库integ_soil_profnutrnext',
-               -2: '整合数据库integ_soil_profchemnext',
-               -3: '整合数据库integ_soil_profphysnext',
-               -4: '整合数据库integ_profile_horizonnext'}
+                -2: '整合数据库integ_soil_profchemnext',
+                -3: '整合数据库integ_soil_profphysnext',
+                -4: '整合数据库integ_profile_horizonnext'}
 
-    prof_url_set = set()
+    prof_url_dict = {}
+
     for ind in ind_dict.keys():
+        prof_url_dict[ind] = []
         soil_row = soil_rows[ind]
         prof_rows = soil_row.find(class_='datacol').find_all('tr')[1:]
         while len(prof_rows) > 0:
             for prof_row in prof_rows:
                 prof_url = prof_row.find('a').get('href')
-                prof_url_set.add(prof_url)
+                prof_url_dict[ind].append(prof_url)
 
             nextpage_key = browser.find_element_by_xpath("//a[@id='{:s}']".format(ind_dict[ind]))
             nextpage_key.send_keys('\n')
-            time.sleep(4.5)
+            time.sleep(3.5)
+
             bs_soil = BeautifulSoup(browser.page_source, 'html.parser')
             soil_rows = bs_soil.find(class_='datatypetable').find_all('div', class_='row')[1:]
             prof_rows = soil_rows[ind].find(class_='datacol').find_all('tr')[1:]
 
-    soil_dict['典型剖面数据'] = get_prof_detail(prof_url_set)
+    soil_dict['典型剖面数据'] = get_prof_detail(prof_url_dict)
 
     return soil_dict
 
@@ -219,31 +223,32 @@ def get_prof_landspace_detail(prof_landspace_url):
     return prof_landspace_detail_dict
 
 
-def get_prof_detail(prof_url_set):
+def get_prof_detail(prof_url_dict):
     url_base = 'http://vdb3.soil.csdb.cn'
     prof_detail_dict = {}
-    for prof_url in prof_url_set:
-        single_dict = {}
-        url = parse.quote(url_base + prof_url, safe='/:?=$&')
-        bs = BeautifulSoup(request.urlopen(url).read(), 'html.parser')
-        table = bs.find(class_='datatypetable')
-        rows = table.find_all(class_='row')[1:]
-        for row in rows:
-            title = row.find(class_='titlecol').getText().strip()
-            data = row.find(class_='datacol').getText().strip()
-            if title not in single_dict.keys():
-                single_dict[title] = data
+    for ind in [-1, -2, -3, -4]:
+        for prof_url in prof_url_dict[ind]:
+            single_dict = {}
+            url = parse.quote(url_base + prof_url, safe='/:?=$&')
+            bs = BeautifulSoup(request.urlopen(url).read(), 'html.parser')
+            table = bs.find(class_='datatypetable')
+            rows = table.find_all(class_='row')[1:]
+            for row in rows:
+                title = row.find(class_='titlecol').getText().strip()
+                data = row.find(class_='datacol').getText().strip()
+                if title not in single_dict.keys():
+                    single_dict[title] = data
 
-        if '发生层名称' in single_dict.keys():
-            prof_id = single_dict['发生层名称']
-        else:
-            prof_id = single_dict['发生层次名称']
+            if '发生层名称' in single_dict.keys():
+                prof_id = single_dict['发生层名称']
+            else:
+                prof_id = single_dict['发生层次名称']
 
 
-        if prof_id not in prof_detail_dict:
-            prof_detail_dict[prof_id] = dict()
+            if prof_id not in prof_detail_dict:
+                prof_detail_dict[prof_id] = dict()
 
-        prof_detail_dict[prof_id] = {**prof_detail_dict[prof_id], **single_dict}
+            prof_detail_dict[prof_id] = {**prof_detail_dict[prof_id], **single_dict}
 
     return prof_detail_dict
 
@@ -251,7 +256,7 @@ def get_prof_detail(prof_url_set):
 if __name__ == '__main__':
     total_dict = {}
     province_list = get_province_list()
-    province_list = province_list[24:]
+    province_list = province_list[15:20]
     for province_url in province_list:
         province_dict = get_county_list(province_url)
         with open('data_raw/{:s}.json'.format(province_dict['省份名称']), 'w', encoding='utf-8') as fp:
@@ -260,6 +265,5 @@ if __name__ == '__main__':
 #province_list = get_province_list()
 #get_county_list(province_list[0])
 #get_soil_list('http://vdb3.soil.csdb.cn/front/detail-%E6%95%B4%E5%90%88%E6%95%B0%E6%8D%AE%E5%BA%93$integ_sublocation?id=2')
-#result = get_soil_details("http://vdb3.soil.csdb.cn/front/detail-%E6%95%B4%E5%90%88%E6%95%B0%E6%8D%AE%E5%BA%93$integ_cou_soiltype?id=10161",
-#                          dict())
+#result = get_soil_details("http://vdb3.soil.csdb.cn/front/detail-%E6%95%B4%E5%90%88%E6%95%B0%E6%8D%AE%E5%BA%93$integ_cou_soiltype?id=40037")
 #print(result)

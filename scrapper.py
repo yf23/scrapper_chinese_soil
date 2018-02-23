@@ -63,7 +63,7 @@ def get_county_list(province_url):
     province_dict = {}
     url_base = 'http://vdb3.soil.csdb.cn'
 
-    browser = webdriver.Chrome('./chromedriver.exe', chrome_options=chrome_options)
+    browser = webdriver.Chrome('./chromedriver', chrome_options=chrome_options)
     browser.get(province_url)
     time.sleep(3.5)
     bs_province = BeautifulSoup(browser.page_source, 'html.parser')
@@ -111,7 +111,7 @@ def get_soil_list(county_url):
     soil_list = []
     url_base = 'http://vdb3.soil.csdb.cn'
 
-    browser = webdriver.Chrome('./chromedriver.exe', chrome_options=chrome_options)
+    browser = webdriver.Chrome('./chromedriver', chrome_options=chrome_options)
     browser.get(county_url)
     time.sleep(3.5)
     bs_county = BeautifulSoup(browser.page_source, 'html.parser')
@@ -151,7 +151,7 @@ def get_soil_list(county_url):
 def get_soil_details(soil_url):
     soil_dict = {}
     url_base = 'http://vdb3.soil.csdb.cn'
-    browser = webdriver.Chrome('./chromedriver.exe', chrome_options=chrome_options)
+    browser = webdriver.Chrome('./chromedriver', chrome_options=chrome_options)
     browser.get(soil_url)
     time.sleep(3.5)
 
@@ -256,7 +256,7 @@ def get_prof_detail(prof_url_dict):
 if __name__ == '__main__':
     total_dict = {}
     province_list = get_province_list()
-    province_list = province_list[15:20]
+    province_list = province_list[18:20]
     for province_url in province_list:
         province_dict = get_county_list(province_url)
         with open('data_raw/{:s}.json'.format(province_dict['省份名称']), 'w', encoding='utf-8') as fp:

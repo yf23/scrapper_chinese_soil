@@ -58,6 +58,8 @@ def get_province_list():
 
 
 def get_county_list(province_url):
+    url_soil_dict = {}
+
     time_s_province = time.time()
 
     province_dict = {}
@@ -90,7 +92,7 @@ def get_county_list(province_url):
 
             print('\t正在获取 {:s} (市/县) 的土壤数据...'.format(county['县市名称']))
             time_s_county = time.time()
-            county['土壤列表'] = get_soil_list(county_url)
+            county['土壤列表'] = get_soil_list(county_url, url_soil_dict)
             print('\t耗时{:.2f}分钟'.format((time.time() - time_s_county) / 60.0))
             province_dict['县市列表'][county['县市名称']] = county
 
@@ -107,7 +109,7 @@ def get_county_list(province_url):
     return province_dict
 
 
-def get_soil_list(county_url):
+def get_soil_list(county_url, url_soil_dict):
     soil_list = []
     url_base = 'http://vdb3.soil.csdb.cn'
 
@@ -128,7 +130,12 @@ def get_soil_list(county_url):
             while not success and time_out < 5:
                 try:
                     print('\t\t正在从 {:s} 获取土壤数据...'.format(soil_url))
-                    soil_list.append(get_soil_details(soil_url))
+                    if soil_url in url_soil_dict.keys():
+                        soil_details = url_soil_dict[soil_url]
+                    else:
+                        soil_details = get_soil_details(soil_url)
+                    soil_list.append(soil_details)
+                    url_soil_dict[soil_url] = soil_details
                     success = True
                 except:
                     time_out += 1

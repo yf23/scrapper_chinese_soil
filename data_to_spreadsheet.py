@@ -11,6 +11,7 @@ def load_json(file_path):
 
 
 def parse_province(root_dict, output_dir):
+
     province_name = root_dict['省份名称']
     output_dir = output_dir + '{:s}/'.format(province_name)
     if os.path.exists(output_dir):

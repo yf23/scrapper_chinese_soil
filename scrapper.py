@@ -4,10 +4,16 @@ from selenium.webdriver.chrome.options import Options
 from urllib import parse, request, response
 import json
 import time
-import shutil, os
+import shutil, os, platform
 from threading import Thread
 import functools
 
+
+if platform.system() == 'Linux' or 'Darwin':
+    chrome_driver_path = './chromedriver'
+else:
+    chrome_driver_path = './chromedriver.exe'
+    
 chrome_options = Options()
 chrome_options.add_argument("--disable-extensions")
 chrome_options.add_argument("--headless")
@@ -70,7 +76,7 @@ def get_county_list(province_url):
     province_dict = {}
     url_base = 'http://vdb3.soil.csdb.cn'
 
-    browser = webdriver.Chrome('./chromedriver', chrome_options=chrome_options)
+    browser = webdriver.Chrome(chrome_driver_path, chrome_options=chrome_options)
     browser.get(province_url)
     time.sleep(3.5)
     bs_province = BeautifulSoup(browser.page_source, 'html.parser')
@@ -128,7 +134,7 @@ def get_soil_list(county_url, url_soil_dict):
     soil_list = []
     url_base = 'http://vdb3.soil.csdb.cn'
 
-    browser = webdriver.Chrome('./chromedriver', chrome_options=chrome_options)
+    browser = webdriver.Chrome(chrome_driver_path, chrome_options=chrome_options)
     browser.get(county_url)
     time.sleep(3.5)
     bs_county = BeautifulSoup(browser.page_source, 'html.parser')
@@ -172,7 +178,7 @@ def get_soil_list(county_url, url_soil_dict):
 def get_soil_details(soil_url):
     soil_dict = {}
     url_base = 'http://vdb3.soil.csdb.cn'
-    browser = webdriver.Chrome('./chromedriver', chrome_options=chrome_options)
+    browser = webdriver.Chrome(chrome_driver_path, chrome_options=chrome_options)
     browser.get(soil_url)
     time.sleep(3.5)
 

@@ -4,6 +4,7 @@ from selenium.webdriver.chrome.options import Options
 from urllib import parse, request, response
 import json
 import time
+import shutil, os
 from threading import Thread
 import functools
 
@@ -58,6 +59,10 @@ def get_province_list():
 
 
 def get_county_list(province_url):
+
+    if not os.path.exists('./temp/'):
+        os.makedirs('./temp/')
+
     url_soil_dict = {}
 
     time_s_province = time.time()
@@ -88,13 +93,23 @@ def get_county_list(province_url):
             county['经度'] = cells[1].getText().strip()
             county['纬度'] = cells[2].getText().strip()
 
+            temp_file_path = 'temp/{:s}_{:s}.json'.format(province_dict['省份名称'], county['县市名称'])
             county_url = parse.quote(url_base + cells[3].find('a').get('href'), safe='/:?=$&')
 
             print('\t正在获取 {:s} (市/县) 的土壤数据...'.format(county['县市名称']))
             time_s_county = time.time()
-            county['土壤列表'] = get_soil_list(county_url, url_soil_dict)
-            print('\t耗时{:.2f}分钟'.format((time.time() - time_s_county) / 60.0))
+
+            if os.path.exists(temp_file_path):
+                with open(temp_file_path, 'r', encoding='utf-8') as fr:
+                    county = json.load(fr)
+            else:
+                county['土壤列表'] = get_soil_list(county_url, url_soil_dict)
+                with open(temp_file_path, 'w', encoding='utf-8') as fp:
+                    json.dump(county, fp, ensure_ascii=False, indent=4)
+
             province_dict['县市列表'][county['县市名称']] = county
+
+            print('\t耗时{:.2f}分钟'.format((time.time() - time_s_county) / 60.0))
 
         nextpage_key = browser.find_element_by_xpath("//a[contains(text(),'下一页')]")
         nextpage_key.send_keys('\n')
@@ -151,7 +166,6 @@ def get_soil_list(county_url, url_soil_dict):
         info = bs_county.find(class_='datatypetable')
         soil_tables = info.find('table').find_all('tr')[1:]
     return soil_list
-
 
 
 @timeout(240)
@@ -268,6 +282,8 @@ if __name__ == '__main__':
         province_dict = get_county_list(province_url)
         with open('data_raw/{:s}.json'.format(province_dict['省份名称']), 'w', encoding='utf-8') as fp:
             json.dump(province_dict, fp, ensure_ascii=False, indent=4)
+
+    shutil.rmtree('./temp/')
 
 #province_list = get_province_list()
 #get_county_list(province_list[0])
